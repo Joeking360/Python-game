@@ -99,27 +99,23 @@ class Party:
             self.defence_bonus = self.defence_bonus + self.active_inventory[counter].potency
         elif self.active_inventory[counter].boost_type == "Strength":
             self.strength_bonus = int(self.strength_bonus) + int(self.active_inventory[counter].potency)
-            print(self.active_inventory[counter].potency)
-            print(self.strength_bonus)
+
         self.active_inventory.pop(counter)
 
 
     def stats(self):
-        print(self.strength_bonus)
         if self.position == "Battle":
             self.life = self.life + self.life_bonus
         else:
             self.life = (self.level*4) + self.life_bonus
         self.strength = (self.level*4) + self.strength_bonus
         self.defence = (self.level*2) + self.defence_bonus
-        print(self.strength_bonus)
-        print(self.strength)
 
 
 #------------------------------------------------------------------------------------------------------------------------------------------
 
 class Enemy:
-    level = 0
+    level = random.randint(1,Floor)
     name = ""
     life = level*3
     strength = level*3
@@ -132,7 +128,7 @@ class Enemy:
         names_list = ["Jerry","Bob","Karl","Carl","Lebron","James","Steve","Joe","Jack","John","Amy","Sarah","Anne","Micheal","Ian",]
         chooser = random.randint(0,self.level)
         self.item = items[chooser]
-        self.name = names_list[random.randint(0,len(names_list))]
+        self.name = names_list[random.randint(0,(len(names_list)-1))]
 
 
 #------------------------------------------------------------------------------------------------------------------------------------------
@@ -169,31 +165,66 @@ def create_enemy():
 
 def choice_A(i):
     damage = i.strength
-    victim = int(input("Who do you want to attack? "))
-    print("Defence = " + str(enemy_list[victim].defence) + " and attack power = " + str(damage))
-    if enemy_list[victim].defence > int(damage):
-        print("Attack too weak, 0 damage!")
-        print("the enemy has " + str(enemy_list[victim].life) + " life remaing.")
-    else:
-        enemy_list[victim].life = enemy_list[victim].life - (damage - enemy_list[victim].defence)
-        print(i.name + " attacked " + enemy_list[victim].name + " for " + str(damage) + "LIFR points.")
-        print(enemy_list[victim].name + " has " + str(enemy_list[victim].life) + " LIFE points remaining.")
-        if enemy_list[victim].life <= 0:
-            if enemy_list[victim].item.effect_type == "A":               
-                i.active_inventory.append(enemy_list[victim].item)
-            else:
-                i.passive_inventory.append(enemy_list[victim].item)
-            print("The enemy dropped a: " + enemy_list[victim].item.name + " and " + i.name + " picked it up.")
-            enemy_list.pop(victim)
+    counter = 0
+    b = 1
+    print("Use 'w' and 's' to search and use 'x' to select.")
+    while b != "x":
+        b = input()
+        clear()
+        if b == "w":
+            counter = counter - 1
+        elif b == "s":
+            counter = counter + 1
+        elif b == "x":
+            break
         else:
-            print(enemy_list[victim].life)
+            c = 0
+            
+        for x in range(0,len(enemy_list)):
+            if x == counter:
+                print("--" + enemy_list[x].name)
+                print("Life: " + str(enemy_list[x].life))
+                print("Strength: " + str(enemy_list[x].strength))
+                print("Defence: " + str(enemy_list[x].defence))
+            else:
+                print(enemy_list[x].name)
+            print()
+    print("You attacked: " + enemy_list[counter].name)
+
+
+    victim = counter
+    print("Defence = " + str(enemy_list[victim].defence) + " and attack power = " + str(damage))
+    enemy_list[victim].life = enemy_list[victim].life - round((damage / enemy_list[victim].defence))
+    print(i.name + " attacked " + enemy_list[victim].name + " for " + str(round((damage / enemy_list[victim].defence))) + " LIFE points.")
+    print(enemy_list[victim].name + " has " + str(enemy_list[victim].life) + " LIFE points remaining.")
+    if enemy_list[victim].life <= 0:
+        if enemy_list[victim].item.effect_type == "A":               
+            i.active_inventory.append(enemy_list[victim].item)
+        else:
+            i.passive_inventory.append(enemy_list[victim].item)
+        print("The enemy dropped a: " + enemy_list[victim].item.name + " and " + i.name + " picked it up.")
+        enemy_list.pop(victim)
+    else:
+        print()
 
 #------------------------------------------------------------------------------------------------------------------------------------------
 
 def choice(i):
-    for x in range(0,len(enemy_list)):
-        print (enemy_list[x].name + "[" + str(x) + "]" )
-        print ("Life: " + str(enemy_list[x].life))
+    print()
+    print("Party stats:")
+    for j in party_list:
+        print("  " + j.name)
+        print("    Health: " + str(j.life))
+        print("    Strength: " + str(j.strength))
+        print("    Defence: " + str(j.defence))
+    print()
+    print("Enemy stats: ")
+    for x in enemy_list:
+        print("  " + x.name)
+        print("    Health: " + str(x.life))
+        print("    Strength: " + str(x.strength))
+        print("    Defence: " + str(x.defence))
+    print()
     action = input("""What will you do?
         Attack
         Defend
@@ -236,20 +267,16 @@ def battle():
         for i in enemy_list:
             damage = i.strength
             victim = random.randint(0,(len(party_list)-1))
-            if party_list[victim].defence > damage:
-                print("Attack too weak, 0 damage!")
-                print(party_list[victim].name + "still has " + str(party_list[victim].life) + "HEALTH points.")
-            else:
-                party_list[victim].life = party_list[victim].life - (damage - party_list[victim].defence)
-                print(i.name + " attacked " + party_list[victim].name + " and did " + str(damage) + " points of damage!")
-                print(party_list[victim].name + " now has " + str(party_list[victim].life) + " LIFE points remaining!")
+            party_list[victim].life = party_list[victim].life - round((damage / party_list[victim].defence))
+            print(i.name + " attacked " + party_list[victim].name + " and did " + str(damage) + " points of damage!")
+            print(party_list[victim].name + " now has " + str(party_list[victim].life) + " LIFE points remaining!")
 
-                if party_list[victim].life <= 0:
-                    party_list.pop(victim)
-                    if len(enemy_list) <= 0 or len(party_list) <= 0:                        
-                        break
-                else:
-                    print(party_list[victim].life)
+            if party_list[victim].life <= 0:
+                party_list.pop(victim)
+                if len(enemy_list) <= 0 or len(party_list) <= 0:                        
+                    break
+            else:
+                print(party_list[victim].life)
 
         if len(enemy_list) <= 0 or len(party_list) <= 0:
             break
@@ -263,7 +290,3 @@ create_enemy()
 battle()
 
 print("It ended!")
-
-
-
-
